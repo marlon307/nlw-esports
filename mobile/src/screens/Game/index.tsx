@@ -10,13 +10,22 @@ import { THEME } from '../../theme';
 import logoImg from '../../assets/logo-nlw-esports.png';
 import { Heading } from '../../components/Heading';
 import { DuoCard, DuoCardProps } from '../../components/DuoCard';
+import { DuoMatch } from '../../components/DuoMatch';
 import { styles } from './styles';
 
 export function Game() {
-  const [duos, setDuos] = useState<DuoCardProps[]>([])
+  const [duos, setDuos] = useState<DuoCardProps[]>([]);
+  const [discordDuoSelected, setDiscordDuoSelected] = useState<string>('')
   const navigation = useNavigation()
   const route = useRoute();
   const game = route.params as GameParams;
+
+  async function getDiscordUser(adsId: string) {
+    fetch(`http://10.0.0.100:3333/ads/${adsId}/discord`)
+      .then((res) => res.json())
+      .then((josn) => setDiscordDuoSelected(josn.discord)
+      )
+  }
 
   useEffect(() => {
     fetch(`http://10.0.0.100:3333/games/${game.id}/ads`)
@@ -63,8 +72,16 @@ export function Game() {
           keyExtractor={ (item) => item.id }
           renderItem={
             ({ item }) =>
-              <DuoCard data={ item } onConnect={ () => { } } />
+              <DuoCard
+                data={ item }
+                onConnect={ () => getDiscordUser(item.id) }
+              />
           }
+        />
+        <DuoMatch
+          visible={ discordDuoSelected.length > 0 }
+          discord={ discordDuoSelected }
+          onClose={ () => setDiscordDuoSelected("") }
         />
       </SafeAreaView>
     </BackGround>
